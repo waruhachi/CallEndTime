@@ -5,7 +5,7 @@ Adds an end time to recent calls in the Phone app.
 ### Screenshots
 Before | After
 :-------------------------:|:-------------------------:
-<img width="200" src="Images/Before.png">  |  <img width="200" src="Images/After.PNG">
+<img width="200" src="Images/Before.PNG">  |  <img width="200" src="Images/After.png">
 
 ### How to install
 Head over to the [Releases](https://github.com/NightwindDev/CallEndTime/releases) section and download the correct `.deb` for your device.
