@@ -2,8 +2,8 @@
 // Copyright (c) 2025 Nightwind
 //
 
-import UIKit
 import CydiaSubstrate
+import UIKit
 
 @objc
 private protocol PHRecentCallDetailsItemView {
@@ -24,14 +24,16 @@ private protocol PHRecentCallDetailsView {
 	@objc var summaries: NSArray { get set }
 	@objc var recentCall: CHRecentCall { get set }
 
-	@objc func didMoveToWindow() -> Void
+	@objc func layoutSubviews()
 }
 
 private struct Hooks {
 	static var origIMP: IMP?
 
 	static func hook() {
-		guard let targetClass = objc_getClass("PHRecentCallDetailsView") as? AnyClass else { return }
+		guard let targetClass = objc_getClass("PHRecentCallDetailsView") as? AnyClass else {
+			return
+		}
 
 		typealias HookType = @convention(c) (PHRecentCallDetailsView, Selector) -> Void
 
@@ -42,22 +44,33 @@ private struct Hooks {
 			for summary in target.summaries {
 				guard let summaryView = summary as? UIView else { continue }
 
-				guard summaryView.subviews.contains(where: { $0.tag == 100 }) == false else { return }
+				guard summaryView.subviews.contains(where: { $0.tag == 100 }) == false else {
+					return
+				}
 
 				let itemView = unsafeBitCast(summaryView, to: PHRecentCallDetailsItemView.self)
 
-				guard let callOccurence = target.recentCall.callOccurrences.first(where: { element in
-					(element["kCHCallOccurrenceUniqueIdKey"] as? String) == itemView.callUUID
-				}) else { continue }
+				guard
+					let callOccurence = target.recentCall.callOccurrences.first(where: { element in
+						(element["kCHCallOccurrenceUniqueIdKey"] as? String) == itemView.callUUID
+					})
+				else { continue }
 
-				guard let startDate = callOccurence["kCHCallOccurrenceDateKey"] as? Date else { continue }
-				guard let duration = callOccurence["kCHCallOccurrenceDurationKey"] as? Double else { continue }
+				guard let startDate = callOccurence["kCHCallOccurrenceDateKey"] as? Date else {
+					continue
+				}
+				guard let duration = callOccurence["kCHCallOccurrenceDurationKey"] as? Double else {
+					continue
+				}
 
 				if duration == 0 {
 					continue
 				}
 
-				guard let endDate = target.calendar.date(byAdding: .second, value: Int(duration), to: startDate) else { continue }
+				guard
+					let endDate = target.calendar.date(
+						byAdding: .second, value: Int(duration), to: startDate)
+				else { continue }
 
 				let endTimeLabel = UILabel()
 				endTimeLabel.text = target.timeFormatter.string(from: endDate)
@@ -67,13 +80,18 @@ private struct Hooks {
 				summaryView.addSubview(endTimeLabel)
 
 				NSLayoutConstraint.activate([
-					endTimeLabel.leadingAnchor.constraint(equalTo: itemView.timeLabel.leadingAnchor),
-					endTimeLabel.bottomAnchor.constraint(equalTo: itemView.durationAndDataLabel.bottomAnchor)
+					endTimeLabel.leadingAnchor.constraint(
+						equalTo: itemView.timeLabel.leadingAnchor),
+					endTimeLabel.bottomAnchor.constraint(
+						equalTo: itemView.durationAndDataLabel.bottomAnchor),
 				])
+
 			}
 		}
 
-		MSHookMessageEx(targetClass, #selector(PHRecentCallDetailsView.didMoveToWindow), unsafeBitCast(hook, to: IMP.self), &origIMP)
+		MSHookMessageEx(
+			targetClass, #selector(PHRecentCallDetailsView.layoutSubviews),
+			unsafeBitCast(hook, to: IMP.self), &origIMP)
 	}
 }
 
