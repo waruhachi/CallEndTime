@@ -1,6 +1,6 @@
 Package: com.nightwind.callendtime
 Name: CallEndTime
-Version: 0.0.1
+Version: 0.0.2
 Architecture: iphoneos-arm
 Description: Adds an end time to recent calls in the Phone app.
 Maintainer: Nightwind
